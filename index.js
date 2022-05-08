@@ -37,7 +37,7 @@ client.initialize()
 
 /* init rest api */
 
-app.use(express.json())
+app.use(express.json({ limit: '100mb' }))
 
 let basicAuthUsers = {}
 basicAuthUsers[CONFIG.user] = CONFIG.password
