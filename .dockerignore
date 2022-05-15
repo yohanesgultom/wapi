@@ -1,0 +1,4 @@
+/.wwebjs_auth
+/node_modules
+*.tmp
+*.log
