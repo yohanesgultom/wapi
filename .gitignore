@@ -1,3 +1,5 @@
+/.cache
+/.pki
 /.wwebjs_auth
 /node_modules
 config.json

@@ -39,11 +39,13 @@ client.on('qr', (qr) => {
 })
 
 client.on('ready', async () => {
-    let state = await client.getState()
+    const state = await client.getState()
     console.log('Client is ' + state)
 })
 
 client.on('message', async (msg) => {
+    // const chat = await msg.getChat()
+    // console.log(`chat id: ${chat.id._serialized} name: ${chat.name}`)
     msg.react('👍')
 })
 
@@ -58,7 +60,7 @@ basicAuthUsers[CONFIG.user] = CONFIG.password
 app.use(basicAuth({ users: basicAuthUsers }))
 
 app.get('/', async function(_req, res) {
-    let now = new Date()
+    const now = new Date()
     res.json({
         systemTime: now,
         uptimeSec: Math.round((now.getTime() - START_DATE.getTime()) / 1000),
@@ -66,9 +68,9 @@ app.get('/', async function(_req, res) {
 })
 
 app.get('/qr', async function(_req, res) {
-    let state = await client.getState()
+    const state = await client.getState()
     if (state == 'CONNECTED') {
-        res.status(403).json({ error: `An account is already linked: ${client.info.wid}` })
+        res.status(403).json({ error: `Already linked to ${client.info.wid.user}` })
     } else if (!qrContent) {
         res.status(404).json({ error: 'No QR found' })
     } else {
@@ -80,15 +82,15 @@ app.get('/qr', async function(_req, res) {
 
 app.post('/send', async function(req, res) {
     try {
-        let state = await client.getState()
+        const state = await client.getState()
+        if (state != 'CONNECTED') throw `Client state is ` + state
         let chatId = req.body.number
         if (!chatId.endsWith('.us')) {
             chatId += isNaN(chatId) ? '@g.us' : '@c.us'
         }
-        let message = req.body.message
-        if (state != 'CONNECTED') throw `Client state is ` + state
+        const message = req.body.message
         await client.sendMessage(chatId, message)
-        let attachments = req.body.attachments
+        const attachments = req.body.attachments
         if (req.body.attachments) {
             let timeout = 0
             let delay = 1000
@@ -107,6 +109,27 @@ app.post('/send', async function(req, res) {
         return res.status(500).json({ error: err.message })
     }
 })
+
+app.get('/groups', async function(_req, res) {
+    try {
+        const state = await client.getState()
+        if (state != 'CONNECTED') throw `Client state is ` + state
+        const chats = await client.getChats()
+        const groups = chats
+            .filter(chat => chat.isGroup)
+            .map(chat => {
+                return {
+                    id: chat.id._serialized,
+                    name: chat.name
+                }
+            })
+        return res.json(groups)
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({ error: err.message })
+    }
+})
+
 
 app.listen(PORT, function (err) {
     if (err) console.error(err)
