@@ -69,6 +69,7 @@ app.get('/', async function(_req, res) {
 
 app.get('/qr', async function(_req, res) {
     const state = await client.getState()
+    console.log(`client state is ${state}`)
     if (state == 'CONNECTED') {
         res.status(403).json({ error: `Already linked to ${client.info.wid.user}` })
     } else if (!qrContent) {
@@ -83,7 +84,7 @@ app.get('/qr', async function(_req, res) {
 app.post('/send', async function(req, res) {
     try {
         const state = await client.getState()
-        if (state != 'CONNECTED') throw `Client state is ` + state
+        if (state != 'CONNECTED') throw `client state is ${state}`
         let chatId = req.body.number
         if (!chatId.endsWith('.us')) {
             chatId += isNaN(chatId) ? '@g.us' : '@c.us'
