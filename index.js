@@ -57,7 +57,7 @@ let basicAuthUsers = {}
 basicAuthUsers[CONFIG.user] = CONFIG.password
 app.use(basicAuth({ users: basicAuthUsers }))
 
-app.get('/', function(req, res) {
+app.get('/', async function(_req, res) {
     let now = new Date()
     res.json({
         systemTime: now,
@@ -65,7 +65,7 @@ app.get('/', function(req, res) {
     })
 })
 
-app.get('/qr', function(_req, res) {
+app.get('/qr', async function(_req, res) {
     let state = await client.getState()
     if (state == 'CONNECTED') {
         res.status(403).json({ error: `An account is already linked: ${client.info.wid}` })
@@ -108,7 +108,7 @@ app.post('/send', async function(req, res) {
     }
 })
 
-app.listen(PORT, function(err) {
+app.listen(PORT, function (err) {
     if (err) console.error(err)
     console.log(`Server listening on ${PORT}...`)
 })
