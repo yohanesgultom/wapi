@@ -38,9 +38,13 @@ client.on('qr', (qr) => {
     qrTerminal.generate(qr, { small: true })
 })
 
-client.on('ready', async() => {
+client.on('ready', async () => {
     let state = await client.getState()
     console.log('Client is ' + state)
+})
+
+client.on('message', async (msg) => {
+    msg.react('👍')
 })
 
 client.initialize()
@@ -61,8 +65,11 @@ app.get('/', function(req, res) {
     })
 })
 
-app.get('/qr', function(req, res) {
-    if (!qrContent) {
+app.get('/qr', function(_req, res) {
+    let state = await client.getState()
+    if (state == 'CONNECTED') {
+        res.status(403).json({ error: `An account is already linked: ${client.info.wid}` })
+    } else if (!qrContent) {
         res.status(404).json({ error: 'No QR found' })
     } else {
         let stream = qrImage.image(qrContent, { type: 'png', ec_level: 'H', size: 5, margin: 0 })
@@ -74,7 +81,10 @@ app.get('/qr', function(req, res) {
 app.post('/send', async function(req, res) {
     try {
         let state = await client.getState()
-        let chatId = req.body.number + '@c.us'
+        let chatId = req.body.number
+        if (!chatId.endsWith('.us')) {
+            chatId += isNaN(chatId) ? '@g.us' : '@c.us'
+        }
         let message = req.body.message
         if (state != 'CONNECTED') throw `Client state is ` + state
         await client.sendMessage(chatId, message)
