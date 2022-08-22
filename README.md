@@ -1,5 +1,7 @@
 # WAPI
 
+![Test](https://img.shields.io/github/workflow/status/yohanesgultom/wapi/Test?logo=github)
+
 Simple REST API wrapper for the super awesome [whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js)
 
 ## Setup
