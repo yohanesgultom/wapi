@@ -1,0 +1,151 @@
+const request = require('supertest')
+const { MessageMedia } = require('whatsapp-web.js')
+const { createApp } = require('../app')
+
+const configMock = { user: 'user', password: 'secret' }
+const authToken = Buffer.from(configMock.user + ':' + configMock.password).toString('base64')
+const clientMock = {}
+
+const app = createApp(clientMock, configMock)
+
+describe('GET /', () => {
+
+    test('reject unauthenticated', async () => {
+        // When
+        const res = await request(app)
+            .get('')
+        // Expect
+        expect(res.statusCode).toBe(401)
+    })
+
+    test('responds with success', async () => {
+        // When
+        const res = await request(app)
+            .get('')
+            .set('Authorization', 'Basic ' + authToken)
+        
+        // Expect
+        expect(res.statusCode).toBe(200)
+    })
+
+})
+
+describe('GET /qr', () => {
+
+    test('responds with QR image', async () => {
+        // Given
+        clientMock.getState = jest.fn().mockResolvedValue(null)
+        clientMock.qr = 'test'
+
+        // When
+        const res = await request(app)
+            .get('/qr')
+            .set('Authorization', 'Basic ' + authToken)
+        
+        // Expect
+        expect(res.statusCode).toBe(200)
+        expect(res.type).toBe('image/png')
+        expect(res.body.toString('base64').length).toBe(392)
+    })
+
+    test('responds with error if already connected', async () => {
+        // Given
+        clientMock.getState = jest.fn().mockResolvedValue('CONNECTED')
+        clientMock.info = { wid: { user: 'test' } }
+
+        // When
+        const res = await request(app)
+            .get('/qr')
+            .set('Authorization', 'Basic ' + authToken)
+
+        // Expect
+        expect(res.statusCode).toBe(403)
+        expect(res.type).toBe('application/json')
+        expect(res.body).toMatchObject({ error: `Already linked to ${clientMock.info.wid.user}` })
+    })
+
+    test('responds with error if QR is not showing', async () => {
+        // Given
+        clientMock.getState = jest.fn().mockResolvedValue(null)
+        clientMock.qr = undefined
+
+        // When
+        const res = await request(app)
+            .get('/qr')
+            .set('Authorization', 'Basic ' + authToken)
+
+        // Expect
+        expect(res.statusCode).toBe(404)
+        expect(res.type).toBe('application/json')
+        expect(res.body).toMatchObject({ error: 'No QR found' })
+    })
+
+})
+
+describe('POST /send', () => {
+
+    test('responds with success', async () => {
+        // Given
+        clientMock.getState = jest.fn().mockResolvedValue('CONNECTED')
+        clientMock.sendMessage = jest.fn()
+        jest.useFakeTimers()
+        jest.spyOn(global, 'setTimeout')
+
+        // When
+        const payload = {
+            number: "6288290764816",
+            message: "Hello world 🙏",
+            attachments: [{ filename : "hello.txt", mime: "text/plain", content: "aGVsbG8K"}]
+        }
+        const res = await request(app)
+            .post('/send')
+            .set('Authorization', 'Basic ' + authToken)
+            .send(payload)
+        
+        // Expect
+        expect(res.statusCode).toBe(200)
+        expect(res.type).toBe('application/json')
+        expect(res.body).toMatchObject({
+            message: 'Message successfully sent to ' + payload.number,
+        })
+        expect(clientMock.sendMessage).toHaveBeenNthCalledWith(
+            1, 
+            payload.number + '@c.us',
+            payload.message
+        )
+        const attachment = payload.attachments[0]
+        const media = new MessageMedia(attachment.mime, attachment.content, attachment.filename)
+        expect(setTimeout).toHaveBeenNthCalledWith(
+            1,
+            expect.any(Function),
+            1000
+        )
+    })
+
+})
+
+describe('GET /groups', () => {
+
+    test('responds with success', async () => {
+        // Given
+        const mockChats = [
+            { isGroup: false, id: { _serialized: 'person1@c.us' }, name: 'John Doe' },
+            { isGroup: true, id: { _serialized: 'group1@g.us' }, name: 'Group 1' }
+        ]
+        clientMock.getState = jest.fn().mockResolvedValue('CONNECTED')
+        clientMock.getChats = jest.fn().mockResolvedValue(mockChats)
+
+        // When
+        const res = await request(app)
+            .get('/groups')
+            .set('Authorization', 'Basic ' + authToken)
+        
+        // Expect
+        expect(res.statusCode).toBe(200)
+        expect(res.type).toBe('application/json')
+        expect(res.body).toMatchObject([
+            { id: mockChats[1].id._serialized, name: mockChats[1].name }
+        ])
+    })
+
+})

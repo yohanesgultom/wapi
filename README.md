@@ -24,7 +24,7 @@ With Docker:
 
 ```
 docker run --name wapi-dev -e DOCKERIZED=1 -p 4000:4000 -d -v $PWD:/home/api wapi:latest
-docker exec -it wapi-dev bash
+docker exec -u 0 -it wapi-dev bash
 ```
 ## API
 
