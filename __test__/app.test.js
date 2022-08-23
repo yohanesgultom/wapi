@@ -10,7 +10,7 @@ const app = createApp(clientMock, configMock)
 
 describe('GET /', () => {
 
-    test('reject unauthenticated', async () => {
+    test('should reject unauthenticated', async () => {
         // When
         const res = await request(app)
             .get('')
@@ -18,7 +18,7 @@ describe('GET /', () => {
         expect(res.statusCode).toBe(401)
     })
 
-    test('responds with success', async () => {
+    test('should respond with success', async () => {
         // When
         const res = await request(app)
             .get('')
@@ -32,7 +32,7 @@ describe('GET /', () => {
 
 describe('GET /qr', () => {
 
-    test('responds with QR image', async () => {
+    test('should respond with QR image', async () => {
         // Given
         clientMock.getState = jest.fn().mockResolvedValue(null)
         clientMock.qr = 'test'
@@ -48,7 +48,7 @@ describe('GET /qr', () => {
         expect(res.body.toString('base64').length).toBe(392)
     })
 
-    test('responds with error if already connected', async () => {
+    test('should respond with error if already connected', async () => {
         // Given
         clientMock.getState = jest.fn().mockResolvedValue('CONNECTED')
         clientMock.info = { wid: { user: 'test' } }
@@ -64,7 +64,7 @@ describe('GET /qr', () => {
         expect(res.body).toMatchObject({ error: `Already linked to ${clientMock.info.wid.user}` })
     })
 
-    test('responds with error if QR is not showing', async () => {
+    test('should respond with error if QR is not showing', async () => {
         // Given
         clientMock.getState = jest.fn().mockResolvedValue(null)
         clientMock.qr = undefined
@@ -84,7 +84,7 @@ describe('GET /qr', () => {
 
 describe('POST /send', () => {
 
-    test('responds with success', async () => {
+    test('should respond with success', async () => {
         // Given
         clientMock.getState = jest.fn().mockResolvedValue('CONNECTED')
         clientMock.sendMessage = jest.fn()
@@ -126,7 +126,7 @@ describe('POST /send', () => {
 
 describe('GET /groups', () => {
 
-    test('responds with success', async () => {
+    test('should respond with success', async () => {
         // Given
         const mockChats = [
             { isGroup: false, id: { _serialized: 'person1@c.us' }, name: 'John Doe' },

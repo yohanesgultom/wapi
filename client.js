@@ -34,7 +34,7 @@ const createClient = (isDockerized = false) => {
         // console.log(`chat id: ${chat.id._serialized} name: ${chat.name}`)
         if (!chat.isGroup) {
             const emoji = emojis[Math.floor(Math.random()*emojis.length)]
-            msg.react(emoji)
+            await msg.react(emoji)
         }
     })
 

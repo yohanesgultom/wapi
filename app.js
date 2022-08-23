@@ -68,7 +68,7 @@ const createApp = (client, config) => {
     app.get('/groups', async function(_req, res) {
         try {
             const state = await client.getState()
-            if (state != 'CONNECTED') throw `Client state is ` + state
+            if (state != 'CONNECTED') throw `client state is ` + state
             const chats = await client.getChats()
             const groups = chats
                 .filter(chat => chat.isGroup)
