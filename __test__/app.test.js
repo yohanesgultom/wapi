@@ -122,6 +122,28 @@ describe('POST /send', () => {
         )
     })
 
+    test('should respond with error', async () => {
+        // Given
+        clientMock.getState = jest.fn().mockResolvedValue(null)
+
+        // When
+        const payload = {
+            number: "6288290764816",
+            message: "Hello world 🙏",
+        }
+        const res = await request(app)
+            .post('/send')
+            .set('Authorization', 'Basic ' + authToken)
+            .send(payload)
+        
+        // Expect
+        expect(res.statusCode).toBe(500)
+        expect(res.type).toBe('application/json')
+        // expect(res.body).toMatchObject({
+        //     error: 'client state is null',
+        // })
+    })
+
 })
 
 describe('GET /groups', () => {
@@ -146,6 +168,23 @@ describe('GET /groups', () => {
         expect(res.body).toMatchObject([
             { id: mockChats[1].id._serialized, name: mockChats[1].name }
         ])
+    })
+
+    test('should respond with error', async () => {
+        // Given
+        clientMock.getState = jest.fn().mockResolvedValue(null)
+
+        // When
+        const res = await request(app)
+            .get('/groups')
+            .set('Authorization', 'Basic ' + authToken)
+        
+        // Expect
+        expect(res.statusCode).toBe(500)
+        expect(res.type).toBe('application/json')        
+        // expect(res.body).toMatchObject({
+        //     error: 'client state is null',
+        // })
     })
 
 })

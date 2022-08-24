@@ -56,12 +56,12 @@ const createApp = (client, config) => {
                     setTimeout(() => { client.sendMessage(chatId, media) }, timeout)
                 }
             }
-            return res.json({
+            res.json({
                 message: 'Message successfully sent to ' + req.body.number,
             })
         } catch (err) {
             console.error(err)
-            return res.status(500).json({ error: err.message })
+            res.status(500).json({ error: err.message })
         }
     })
 
@@ -78,10 +78,10 @@ const createApp = (client, config) => {
                         name: chat.name
                     }
                 })
-            return res.json(groups)
+            res.json(groups)
         } catch (err) {
             console.error(err)
-            return res.status(500).json({ error: err.message })
+            res.status(500).json({ error: err.message })
         }
     })
 
