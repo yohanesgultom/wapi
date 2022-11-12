@@ -1,7 +1,6 @@
 const qrImage = require('qr-image');
 const express = require('express');
 const basicAuth = require('express-basic-auth');
-const { MessageMedia } = require('whatsapp-web.js');
 
 const createApp = (client, outgoingMessageQueue, config, logger = console) => { 
     const app = express();

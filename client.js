@@ -1,4 +1,4 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrTerminal = require('qrcode-terminal');
 const emojis = ['👍', '✅', '💡', '🙂', '🐬', '🚀', '⭐', '🙏🏻'];
 
@@ -29,11 +29,15 @@ const createClient = (isDockerized = false, logger = console) => {
     });
 
     client.on('message', async (msg) => {
-        const chat = await msg.getChat();
-        logger.info(`chat id: ${chat.id._serialized} name: ${chat.name}`);
-        if (!chat.isGroup) {
-            const emoji = emojis[Math.floor(Math.random()*emojis.length)];
-            msg.react(emoji);
+        try {
+            const chat = await msg.getChat();
+            logger.info(`chat id: ${chat.id._serialized} name: ${chat.name}`);
+            if (!chat.isGroup && chat.name) {
+                const emoji = emojis[Math.floor(Math.random()*emojis.length)];
+                msg.react(emoji);
+            }
+        } catch (err) {
+            logger.error(err);
         }
     });
 
@@ -42,6 +46,29 @@ const createClient = (isDockerized = false, logger = console) => {
     return client;
 }
 
+const sendMessageAsync = async (client, input) => {
+    const state = await client.getState();
+    if (state != 'CONNECTED') throw `client state is ${state}`;
+    let chatId = input.number;
+    if (!chatId.endsWith('.us')) {
+        chatId += isNaN(chatId) ? '@g.us' : '@c.us';
+    }
+    const message = input.message;
+    await client.sendMessage(chatId, message);
+    const attachments = input.attachments;
+    if (input.attachments) {
+        let timeout = 0;
+        let delay = 1000;
+        for (let i = 0; i < attachments.length; i++) {
+            let a = attachments[i];
+            let media = new MessageMedia(a.mime, a.content, a.filename);
+            timeout += delay;
+            setTimeout(() => { client.sendMessage(chatId, media) }, timeout);
+        }
+    }
+}
+
 module.exports = {
-    createClient
+    createClient,
+    sendMessageAsync,
 }

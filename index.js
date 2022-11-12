@@ -7,7 +7,7 @@ const logger = createLogger({
   transports: [new transports.Console({})],
 });
 
-const { createClient } = require('./client');
+const { createClient, sendMessageAsync } = require('./client');
 const { createApp } = require('./app');
 
 const configContent = fs.readFileSync('config.json');
@@ -26,33 +26,11 @@ const isClientConnected = (cb) => {
         .catch((err) => cb(err, false));
 }
 
-const sendMessageAsync = async (client, input) => {
-    const state = await client.getState();
-    if (state != 'CONNECTED') throw `client state is ${state}`;
-    let chatId = input.number;
-    if (!chatId.endsWith('.us')) {
-        chatId += isNaN(chatId) ? '@g.us' : '@c.us';
-    }
-    const message = input.message;
-    await client.sendMessage(chatId, message);
-    const attachments = input.attachments;
-    if (input.attachments) {
-        let timeout = 0;
-        let delay = 1000;
-        for (let i = 0; i < attachments.length; i++) {
-            let a = attachments[i];
-            let media = new MessageMedia(a.mime, a.content, a.filename);
-            timeout += delay;
-            setTimeout(() => { client.sendMessage(chatId, media) }, timeout);
-        }
-    }
-}
-
 const sendMessage = (input, cb) => {
     logger.info(`sendMessage: ` + JSON.stringify(input))
     sendMessageAsync(client, input)
         .then(() => { cb(null, true)})
-        .catch((err) => { cb(err, false)})
+        .catch((err) => { cb(err, false)});
 }
 
 const outgoingMessageQueue = new Queue(sendMessage, {
