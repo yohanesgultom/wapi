@@ -31,6 +31,7 @@ describe('client', () => {
         const chatMock = {
             isGroup: false,
             id: { _serialized: "" },
+            name: "mock",
         };
         const msgMock = {
             getChat: jest.fn().mockResolvedValueOnce(chatMock),
