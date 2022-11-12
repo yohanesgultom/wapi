@@ -1,46 +1,45 @@
-const { Client, LocalAuth } = require('whatsapp-web.js')
-const qrTerminal = require('qrcode-terminal')
-const emojis = ['👍', '✅', '💡', '🙂', '🐬', '🚀', '⭐', '🙏🏻']
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const qrTerminal = require('qrcode-terminal');
+const emojis = ['👍', '✅', '💡', '🙂', '🐬', '🚀', '⭐', '🙏🏻'];
 
-const createClient = (isDockerized = false) => {
+const createClient = (isDockerized = false, logger = console) => {
 
     const options = {
-        authStrategy: new LocalAuth()
+        authStrategy: new LocalAuth(),
     }
 
-    console.log(`dockerized == ${isDockerized}`)
+    logger.info(`dockerized == ${isDockerized}`);
     if (isDockerized) {
         options['puppeteer'] = {
             args: ['--no-sandbox', '--disable-setuid-sandbox']
-        }
+        };
     }
 
-    const client = new Client(options)
+    const client = new Client(options);
 
     client.on('qr', (qr) => {
         // Generate and scan this code with your phone
-        // console.log('QR RECEIVED', qr);
-        client.qr = qr
-        qrTerminal.generate(qr, { small: true })
-    })
+        client.qr = qr;
+        qrTerminal.generate(qr, { small: true });
+    });
 
     client.on('ready', async () => {
-        const state = await client.getState()
-        console.log('Client is ' + state)
-    })
+        const state = await client.getState();
+        logger.info('Client is ' + state);
+    });
 
     client.on('message', async (msg) => {
-        const chat = await msg.getChat()
-        // console.log(`chat id: ${chat.id._serialized} name: ${chat.name}`)
+        const chat = await msg.getChat();
+        logger.info(`chat id: ${chat.id._serialized} name: ${chat.name}`);
         if (!chat.isGroup) {
-            const emoji = emojis[Math.floor(Math.random()*emojis.length)]
-            msg.react(emoji)
+            const emoji = emojis[Math.floor(Math.random()*emojis.length)];
+            msg.react(emoji);
         }
-    })
+    });
 
-    client.initialize()
+    client.initialize();
 
-    return client
+    return client;
 }
 
 module.exports = {

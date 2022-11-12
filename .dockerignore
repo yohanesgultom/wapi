@@ -1,4 +1,7 @@
-/.wwebjs_auth
-/node_modules
+.wwebjs_auth
+node_modules
+coverage
+.github
+*.sqlite
 *.tmp
 *.log

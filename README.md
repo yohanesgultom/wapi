@@ -6,8 +6,7 @@ Simple REST API wrapper for the super awesome [whatsapp-web.js](https://github.c
 
 ## Todo
 
-1. Send message queue using SQLite
-2. Webhook for incoming message
+1. Webhook for incoming message
 
 ## Setup
 

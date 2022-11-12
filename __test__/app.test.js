@@ -1,147 +1,114 @@
-const request = require('supertest')
-const { MessageMedia } = require('whatsapp-web.js')
-const { createApp } = require('../app')
+const request = require('supertest');
+const { MessageMedia } = require('whatsapp-web.js');
+const { createApp } = require('../app');
 
-const configMock = { user: 'user', password: 'secret' }
-const authToken = Buffer.from(configMock.user + ':' + configMock.password).toString('base64')
-const clientMock = {}
+const configMock = { user: 'user', password: 'secret' };
+const authToken = Buffer.from(configMock.user + ':' + configMock.password).toString('base64');
+const clientMock = {};
+const queueMock = {};
 
-const app = createApp(clientMock, configMock)
+const app = createApp(clientMock, queueMock, configMock);
 
 describe('GET /', () => {
 
     test('should reject unauthenticated', async () => {
         // When
         const res = await request(app)
-            .get('')
+            .get('');
         // Expect
-        expect(res.statusCode).toBe(401)
-    })
+        expect(res.statusCode).toBe(401);
+    });
 
     test('should respond with success', async () => {
         // When
         const res = await request(app)
             .get('')
-            .set('Authorization', 'Basic ' + authToken)
+            .set('Authorization', 'Basic ' + authToken);
         
         // Expect
-        expect(res.statusCode).toBe(200)
-    })
+        expect(res.statusCode).toBe(200);
+    });
 
-})
+});
 
 describe('GET /qr', () => {
 
     test('should respond with QR image', async () => {
         // Given
-        clientMock.getState = jest.fn().mockResolvedValue(null)
-        clientMock.qr = 'test'
+        clientMock.getState = jest.fn().mockResolvedValue(null);
+        clientMock.qr = 'test';
 
         // When
         const res = await request(app)
             .get('/qr')
-            .set('Authorization', 'Basic ' + authToken)
+            .set('Authorization', 'Basic ' + authToken);
         
         // Expect
-        expect(res.statusCode).toBe(200)
-        expect(res.type).toBe('image/png')
-        expect(res.body.toString('base64').length).toBe(392)
-    })
+        expect(res.statusCode).toBe(200);
+        expect(res.type).toBe('image/png');
+        expect(res.body.toString('base64').length).toBe(392);
+    });
 
     test('should respond with error if already connected', async () => {
         // Given
-        clientMock.getState = jest.fn().mockResolvedValue('CONNECTED')
-        clientMock.info = { wid: { user: 'test' } }
+        clientMock.getState = jest.fn().mockResolvedValue('CONNECTED');
+        clientMock.info = { wid: { user: 'test' } };
 
         // When
         const res = await request(app)
             .get('/qr')
-            .set('Authorization', 'Basic ' + authToken)
+            .set('Authorization', 'Basic ' + authToken);
 
         // Expect
-        expect(res.statusCode).toBe(403)
-        expect(res.type).toBe('application/json')
-        expect(res.body).toMatchObject({ error: `Already linked to ${clientMock.info.wid.user}` })
-    })
+        expect(res.statusCode).toBe(403);
+        expect(res.type).toBe('application/json');
+        expect(res.body).toMatchObject({ error: `Already linked to ${clientMock.info.wid.user}` });
+    });
 
     test('should respond with error if QR is not showing', async () => {
         // Given
-        clientMock.getState = jest.fn().mockResolvedValue(null)
-        clientMock.qr = undefined
+        clientMock.getState = jest.fn().mockResolvedValue(null);
+        clientMock.qr = undefined;
 
         // When
         const res = await request(app)
             .get('/qr')
-            .set('Authorization', 'Basic ' + authToken)
+            .set('Authorization', 'Basic ' + authToken);
 
         // Expect
-        expect(res.statusCode).toBe(404)
-        expect(res.type).toBe('application/json')
-        expect(res.body).toMatchObject({ error: 'No QR found' })
-    })
+        expect(res.statusCode).toBe(404);
+        expect(res.type).toBe('application/json');
+        expect(res.body).toMatchObject({ error: 'No QR found' });
+    });
 
-})
+});
 
 describe('POST /send', () => {
 
     test('should respond with success', async () => {
         // Given
-        clientMock.getState = jest.fn().mockResolvedValue('CONNECTED')
-        clientMock.sendMessage = jest.fn()
-        jest.useFakeTimers()
-        jest.spyOn(global, 'setTimeout')
+        queueMock.push = jest.fn();
+        jest.useFakeTimers();
+        jest.spyOn(global, 'setTimeout');
 
         // When
         const payload = {
             number: "6288290764816",
             message: "Hello world 🙏",
             attachments: [{ filename : "hello.txt", mime: "text/plain", content: "aGVsbG8K"}]
-        }
+        };
         const res = await request(app)
             .post('/send')
             .set('Authorization', 'Basic ' + authToken)
-            .send(payload)
+            .send(payload);
         
         // Expect
-        expect(res.statusCode).toBe(200)
-        expect(res.type).toBe('application/json')
+        expect(res.statusCode).toBe(200);
+        expect(res.type).toBe('application/json');
         expect(res.body).toMatchObject({
-            message: 'Message successfully sent to ' + payload.number,
-        })
-        expect(clientMock.sendMessage).toHaveBeenNthCalledWith(
-            1, 
-            payload.number + '@c.us',
-            payload.message
-        )
-        const attachment = payload.attachments[0]
-        const media = new MessageMedia(attachment.mime, attachment.content, attachment.filename)
-        expect(setTimeout).toHaveBeenNthCalledWith(
-            1,
-            expect.any(Function),
-            1000
-        )
-    })
-
-    test('should respond with error', async () => {
-        // Given
-        clientMock.getState = jest.fn().mockResolvedValue(null)
-
-        // When
-        const payload = {
-            number: "6288290764816",
-            message: "Hello world 🙏",
-        }
-        const res = await request(app)
-            .post('/send')
-            .set('Authorization', 'Basic ' + authToken)
-            .send(payload)
-        
-        // Expect
-        expect(res.statusCode).toBe(500)
-        expect(res.type).toBe('application/json')
-        // expect(res.body).toMatchObject({
-        //     error: 'client state is null',
-        // })
+            message: 'Message to ' + payload.number + ' is succesfully queued',
+        });
+        expect(queueMock.push).toHaveBeenNthCalledWith(1, payload);
     })
 
 })
@@ -153,38 +120,35 @@ describe('GET /groups', () => {
         const mockChats = [
             { isGroup: false, id: { _serialized: 'person1@c.us' }, name: 'John Doe' },
             { isGroup: true, id: { _serialized: 'group1@g.us' }, name: 'Group 1' }
-        ]
-        clientMock.getState = jest.fn().mockResolvedValue('CONNECTED')
-        clientMock.getChats = jest.fn().mockResolvedValue(mockChats)
+        ];
+        clientMock.getState = jest.fn().mockResolvedValue('CONNECTED');
+        clientMock.getChats = jest.fn().mockResolvedValue(mockChats);
 
         // When
         const res = await request(app)
             .get('/groups')
-            .set('Authorization', 'Basic ' + authToken)
+            .set('Authorization', 'Basic ' + authToken);
         
         // Expect
-        expect(res.statusCode).toBe(200)
-        expect(res.type).toBe('application/json')
+        expect(res.statusCode).toBe(200);
+        expect(res.type).toBe('application/json');
         expect(res.body).toMatchObject([
             { id: mockChats[1].id._serialized, name: mockChats[1].name }
-        ])
-    })
+        ]);
+    });
 
     test('should respond with error', async () => {
         // Given
-        clientMock.getState = jest.fn().mockResolvedValue(null)
+        clientMock.getState = jest.fn().mockResolvedValue(null);
 
         // When
         const res = await request(app)
             .get('/groups')
-            .set('Authorization', 'Basic ' + authToken)
+            .set('Authorization', 'Basic ' + authToken);
         
         // Expect
-        expect(res.statusCode).toBe(500)
-        expect(res.type).toBe('application/json')        
-        // expect(res.body).toMatchObject({
-        //     error: 'client state is null',
-        // })
-    })
+        expect(res.statusCode).toBe(500);
+        expect(res.type).toBe('application/json');
+    });
 
-})
+});
