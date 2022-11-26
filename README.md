@@ -4,10 +4,6 @@
 
 Simple REST API wrapper for the super awesome [whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js)
 
-## Todo
-
-1. Webhook for incoming message
-
 ## Setup
 
 With Docker:
@@ -58,3 +54,22 @@ All APIs require [Basic Authentication](https://en.wikipedia.org/wiki/Basic_acce
 1. **GET** `/groups`
 
     Get list of groups (id and name) where this account is included
+
+1. **GET** `/webhooks`
+
+    Get all webhooks
+
+1. **POST** `/webhooks`
+
+    Add a webhook:
+    Example:
+
+        {
+            "postUrl": "http://localhost:4000/test",
+            "authHeader": "Basic c2VjcmV0Cg==",
+            "eventCode": "INCOMING_MESSAGE"
+        }
+
+1. **DELETE** `/webhooks/:id`
+
+    Delete a webhook

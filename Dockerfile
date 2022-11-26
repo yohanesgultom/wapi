@@ -11,10 +11,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Run everything after as non-privileged user.
-RUN mkdir -p /home/api
+RUN mkdir -p /home/api/src
 RUN useradd -ms /bin/bash api
 
-WORKDIR /home/api
+WORKDIR /home/api/src
 COPY . .
 
 RUN chown -R api:api /home/api

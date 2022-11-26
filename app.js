@@ -2,7 +2,7 @@ const qrImage = require('qr-image');
 const express = require('express');
 const basicAuth = require('express-basic-auth');
 
-const createApp = (client, outgoingMessageQueue, config, logger = console) => { 
+const createApp = (client, outgoingMessageQueue, config, db, logger = console) => { 
     const app = express();
     const START_DATE = new Date();
 
@@ -65,6 +65,55 @@ const createApp = (client, outgoingMessageQueue, config, logger = console) => {
             res.status(500).json({ error: err.message });
         }
     });
+
+    app.post('/test', async function(req, res) {
+        try {
+            logger.info('/test invoked:' + JSON.stringify(req.body));
+            res.json(req.body);
+        } catch (err) {
+            logger.error(err);
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    app.get('/webhooks', async function(_req, res) {
+        try {
+            res.json(await db.webhooks.all());
+        } catch (err) {
+            logger.error(err);
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    app.post('/webhooks', async function(req, res) {
+        try {
+            await db.webhooks.create({
+                postUrl: req.body.postUrl,
+                authHeader: req.body.authHeader,
+                eventCode: req.body.eventCode,
+            });
+            res.status(201).json({
+                message: 'Webhook created: ' + req.body.postUrl,
+            });
+        } catch (err) {
+            logger.error(err);
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+
+    app.delete('/webhooks/:id', async function(req, res) {
+        try {
+            await db.webhooks.delete(req.params.id);
+            res.status(200).json({
+                message: 'Webhook deleted: ' + req.params.id,
+            });
+        } catch (err) {
+            logger.error(err);
+            res.status(500).json({ error: err.message });
+        }
+    });
+
 
     return app;
 }

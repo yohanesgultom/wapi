@@ -1,21 +1,32 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrTerminal = require('qrcode-terminal');
+const axios = require('axios');
 const emojis = ['👍', '✅', '💡', '🙂', '🐬', '🚀', '⭐', '🙏🏻'];
+const USER_DATA_PATH = process.env.USER_DATA_PATH;
 
-const createClient = (isDockerized = false, logger = console) => {
+const createClient = (db, isDockerized = false, logger = console) => {
 
-    const options = {
-        authStrategy: new LocalAuth(),
+    const postOptions = {}
+
+    // use custom path to user data directory if provided
+    logger.info(`USER_DATA_PATH = ${USER_DATA_PATH}`);
+    if (USER_DATA_PATH) {
+        postOptions.authStrategy = new LocalAuth({
+            dataPath: USER_DATA_PATH,
+        });
+    } else {
+        postOptions.authStrategy = new LocalAuth();
     }
 
-    logger.info(`dockerized == ${isDockerized}`);
+    // add postOptions when running inside docker
+    logger.info(`dockerized = ${isDockerized}`);
     if (isDockerized) {
-        options['puppeteer'] = {
+        postOptions['puppeteer'] = {
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         };
     }
 
-    const client = new Client(options);
+    const client = new Client(postOptions);
 
     client.on('qr', (qr) => {
         // Generate and scan this code with your phone
@@ -32,9 +43,36 @@ const createClient = (isDockerized = false, logger = console) => {
         try {
             const chat = await msg.getChat();
             logger.info(`chat id: ${chat.id._serialized} name: ${chat.name}`);
+            
+            // give random reaction
             if (!chat.isGroup && chat.name) {
                 const emoji = emojis[Math.floor(Math.random()*emojis.length)];
                 msg.react(emoji);
+            }
+            
+            // invoke webhooks
+            if (db && db.webhooks) {
+                const webhooks = await db.webhooks.all();
+                for (let i in webhooks) {
+                    try {
+                        const webhook = webhooks[i];
+                        // logger.info('webhook: ' + JSON.stringify(webhook));
+                        if (webhook.event_code == 'INCOMING_MESSAGE' && webhook.post_url) {
+                            const postOptions = {
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                }
+                            };
+                            if (webhook.auth_header) {
+                                postOptions['headers']['Authorization'] = webhook.auth_header;
+                            }
+                            // no await, let it run in the background
+                            await axios.post(webhook.post_url, msg, postOptions);
+                        }                       
+                    } catch (e) {
+                        logger.error(e);
+                    }
+                }
             }
         } catch (err) {
             logger.error(err);

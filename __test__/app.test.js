@@ -6,8 +6,9 @@ const configMock = { user: 'user', password: 'secret' };
 const authToken = Buffer.from(configMock.user + ':' + configMock.password).toString('base64');
 const clientMock = {};
 const queueMock = {};
+const dbMock = {};
 
-const app = createApp(clientMock, queueMock, configMock);
+const app = createApp(clientMock, queueMock, configMock, dbMock);
 
 describe('GET /', () => {
 

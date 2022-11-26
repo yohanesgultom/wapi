@@ -10,8 +10,9 @@ Client.mockImplementation(() => {
     client.getState = jest.fn();
     return client;
 });
-const clientMock = createClient();
-const clientMockDockerized = createClient(true);
+const dbMock = {};
+const clientMock = createClient(dbMock);
+const clientMockDockerized = createClient(dbMock, true);
 
 describe('client', () => {
 
