@@ -1,6 +1,7 @@
 const { createLogger, format, transports } = require("winston");
 const Queue = require('better-queue');
 const fs = require('fs');
+const objectHash = require('object-hash');
 const DB_PATH = process.env.DB_PATH || 'db.sqlite';
 
 const logger = createLogger({
@@ -47,6 +48,12 @@ const outgoingMessageQueue = new Queue(sendMessage, {
     afterProcessDelay: 5000,
     maxRetries: 3, 
     retryDelay: 5000,
+    batchDelay: 5000,
+    id: function (task, cb) {
+        // reduce duplicated message
+        const id = objectHash(task);
+        cb(null, id);
+    },
 })
 
 

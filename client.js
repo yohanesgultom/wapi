@@ -87,14 +87,34 @@ const createClient = (db, isDockerized = false, logger = console) => {
 const sendMessageAsync = async (client, input) => {
     const state = await client.getState();
     if (state != 'CONNECTED') throw `client state is ${state}`;
+    if (!input.message) throw `missing message`;
+
+    // adjust destination number's format
     let chatId = input.number;
     if (!chatId.endsWith('.us')) {
         chatId += isNaN(chatId) ? '@g.us' : '@c.us';
     }
+
+    // prepare and send message
     const message = input.message;
-    await client.sendMessage(chatId, message);
     const attachments = input.attachments;
-    if (input.attachments) {
+    if (attachments 
+        && attachments.length > 0 
+        && ['image/png', 'image/jpg', 'image/bmp'].indexOf(attachments[0].mime.toLowerCase()) >= 0) {
+        // send message as first image's caption
+        const a = attachments.shift();
+        await client.sendMessage(
+            chatId, 
+            new MessageMedia(a.mime, a.content, a.filename), 
+            {caption: message}
+        );
+    } else {
+        // otherwise, send message normally
+        await client.sendMessage(chatId, message);
+    }
+    
+    // handle remaining attachments
+    if (attachments) {
         let timeout = 0;
         let delay = 1000;
         for (let i = 0; i < attachments.length; i++) {
