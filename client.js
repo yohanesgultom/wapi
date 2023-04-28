@@ -42,12 +42,22 @@ const createClient = (db, isDockerized = false, logger = console) => {
     client.on('message', async (msg) => {
         try {
             const chat = await msg.getChat();
-            logger.info(`chat id: ${chat.id._serialized} name: ${chat.name}`);
+            logger.info(`message received`);
             
             // give random reaction
-            if (!chat.isGroup && chat.name) {
+            if (!chat.isGroup && chat.name && '/ping' == msg.body.toLowerCase()) {
                 const emoji = emojis[Math.floor(Math.random()*emojis.length)];
                 msg.react(emoji);
+            }
+
+            // debug mentions
+            if (chat.isGroup) {
+                const mentions = await msg.getMentions();
+                logger.info('group', mentions);
+                const myContact = mentions.find(contact => contact.isMe);
+                if (myContact) {
+                    logger.info('we are mentioned!');
+                }
             }
             
             // invoke webhooks
