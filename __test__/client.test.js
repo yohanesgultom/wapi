@@ -35,6 +35,7 @@ describe('client', () => {
             name: "mock",
         };
         const msgMock = {
+            body: '/ping',
             getChat: jest.fn().mockResolvedValueOnce(chatMock),
             react: jest.fn(),
         };

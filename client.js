@@ -1,10 +1,13 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrTerminal = require('qrcode-terminal');
 const axios = require('axios');
-const emojis = ['👍', '✅', '💡', '🙂', '🐬', '🚀', '⭐', '🙏🏻'];
+const { logger } = require('./logger');
+
+const IMAGE_MIMES = ['image/png', 'image/jpg', 'image/jpeg', 'image/bmp', 'image/webp'];
+const EMOJIS = ['👍', '✅', '💡', '🙂', '🐬', '🚀', '⭐', '🙏🏻'];
 const USER_DATA_PATH = process.env.USER_DATA_PATH;
 
-const createClient = (db, isDockerized = false, logger = console) => {
+const createClient = (db, isDockerized = false) => {
 
     const postOptions = {}
 
@@ -46,7 +49,7 @@ const createClient = (db, isDockerized = false, logger = console) => {
             
             // give random reaction
             if (!chat.isGroup && chat.name && '/ping' == msg.body.toLowerCase()) {
-                const emoji = emojis[Math.floor(Math.random()*emojis.length)];
+                const emoji = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
                 msg.react(emoji);
             }
 
@@ -109,9 +112,9 @@ const sendMessageAsync = async (client, input) => {
     const message = input.message;
     const attachments = input.attachments;
     if (attachments 
-        && attachments.length > 0 
-        && ['image/png', 'image/jpg', 'image/bmp'].indexOf(attachments[0].mime.toLowerCase()) >= 0) {
-        // send message as first image's caption
+            && attachments.length > 0 
+            && IMAGE_MIMES.indexOf(attachments[0].mime.toLowerCase()) >= 0) {
+        // pop first attachment and send it with message as caption
         const a = attachments.shift();
         await client.sendMessage(
             chatId, 

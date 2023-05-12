@@ -1,14 +1,9 @@
-const { createLogger, format, transports } = require("winston");
 const Queue = require('better-queue');
 const fs = require('fs');
 const objectHash = require('object-hash');
 const DB_PATH = process.env.DB_PATH || 'db.sqlite';
 
-const logger = createLogger({
-  format: format.combine(format.timestamp(), format.json()),
-  transports: [new transports.Console({})],
-});
-
+const { logger } = require('./logger');
 const { initDb } = require('./db');
 const { createClient, sendMessageAsync } = require('./client');
 const { createApp } = require('./app');
@@ -19,7 +14,7 @@ const port = config.port || 4000;
 const dockerized = process.env.DOCKERIZED == true;
 
 const db = initDb(DB_PATH);
-const client = createClient(db, dockerized, logger);
+const client = createClient(db, dockerized);
 
 const isClientConnected = (cb) => {
     client.getState()
@@ -30,8 +25,20 @@ const isClientConnected = (cb) => {
         .catch((err) => cb(err, false));
 }
 
+const truncateInput = (input) => {
+    if (input.attachments) {
+        input.attachments = input.attachments.map((a) => {
+            return {
+                ...a,
+                content: a.content.slice(0, 20) + '...',
+            }
+        })
+    }
+    return input;
+}
+
 const sendMessage = (input, cb) => {
-    logger.info(`sendMessage: ` + JSON.stringify(input))
+    logger.info(`sendMessage: ` + JSON.stringify(truncateInput(input)));
     sendMessageAsync(client, input)
         .then(() => { cb(null, true)})
         .catch((err) => { cb(err, false)});
