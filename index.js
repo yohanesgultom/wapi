@@ -27,12 +27,15 @@ const isClientConnected = (cb) => {
 
 const truncateInput = (input) => {
     if (input.attachments) {
-        input.attachments = input.attachments.map((a) => {
-            return {
-                ...a,
-                content: a.content.slice(0, 20) + '...',
-            }
-        })
+        return {
+            ...input,
+            attachments: input.attachments.map((a) => {
+                return {
+                    ...a,
+                    content: a.content.slice(0, 20) + '...',
+                }
+            })
+        }
     }
     return input;
 }
