@@ -1,10 +1,12 @@
-# WAPI
+# 🥗 WAPI
 
-![Test](https://img.shields.io/github/workflow/status/yohanesgultom/wapi/Test?logo=github)
+![Test](https://github.com/yohanesgultom/wapi/actions/workflows/main.yml/badge.svg?branch=main)
 
 Simple REST API wrapper for the super awesome [whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js)
 
-## Setup
+> ⚠️ Due to the nature of the `whatsapp-web.js` dependency on WhatsApp Web behaviours, regular maintainance is required (library update, temporary workaround). If you face any unknown issue that is not fixed in this wrapper, consider checking [whatsapp-web.js issue page](https://github.com/pedroslopez/whatsapp-web.js/issues)
+
+## ⚙️ Setup
 
 With Docker:
 
@@ -20,7 +22,7 @@ Without Docker:
 3. Run `npm install`
 4. Run `npm start`
 
-## Development
+## 🛠️ Development
 
 With Docker:
 
@@ -28,7 +30,7 @@ With Docker:
 docker run --name wapi-dev -e DOCKERIZED=1 -p 4000:4000 -d -v $PWD:/home/api wapi:latest
 docker exec -u 0 -it wapi-dev bash
 ```
-## API
+## 🍱 API
 
 All APIs require [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) using the `user` & `password` in `config.json`:
 
