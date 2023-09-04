@@ -36,7 +36,11 @@ const createApp = (client, outgoingMessageQueue, config, db, logger = console) =
 
     app.post('/send', async function(req, res) {
         try {
-            outgoingMessageQueue.push(req.body);
+            outgoingMessageQueue.push(req.body)
+                .on('failed', function (err) {
+                    logger.error('sendMessage FAILED');
+                    logger.error(err);
+                });
             res.json({
                 message: 'Message to ' + req.body.number + ' is succesfully queued',
             });
