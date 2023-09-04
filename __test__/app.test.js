@@ -88,7 +88,8 @@ describe('POST /send', () => {
 
     test('should respond with success', async () => {
         // Given
-        queueMock.push = jest.fn();
+        const sendMessageMock = {on: jest.fn()};
+        queueMock.push = () => sendMessageMock;
         jest.useFakeTimers();
         jest.spyOn(global, 'setTimeout');
 
@@ -109,7 +110,7 @@ describe('POST /send', () => {
         expect(res.body).toMatchObject({
             message: 'Message to ' + payload.number + ' is succesfully queued',
         });
-        expect(queueMock.push).toHaveBeenNthCalledWith(1, payload);
+        expect(sendMessageMock.on).toHaveBeenCalledTimes(1);
     })
 
 })
