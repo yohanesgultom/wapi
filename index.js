@@ -19,7 +19,7 @@ const client = createClient(db, dockerized);
 const isClientConnected = (cb) => {
     client.getState()
         .then((state) => {
-            logger.info('state = ' + state);
+            logger.info('isClientConnected: state = ' + state);
             cb(null, state == 'CONNECTED');
         })
         .catch((err) => cb(err, false));

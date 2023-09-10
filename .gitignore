@@ -1,9 +1,10 @@
-/.cache
-/.npm
-/.pki
-/.wwebjs_auth
-/node_modules
-/coverage
+.cache
+.npm
+.pki
+.wwebjs_auth
+.wwebjs_cache
+node_modules
+coverage
 .bash_history
 config.json
 *.tmp
