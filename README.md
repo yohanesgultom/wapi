@@ -42,6 +42,11 @@ All APIs require [Basic Authentication](https://en.wikipedia.org/wiki/Basic_acce
 
     Get authentication QR code image
 
+1. **GET** `/contacts/:contactId`
+
+    Get contact details by id .eg `6281311525264@c.us`
+
+
 1. **POST** `/send`
 
     Send a message to an individual or group chat (`number` can contain phone number with country code or a group id)

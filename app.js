@@ -34,6 +34,17 @@ const createApp = (client, outgoingMessageQueue, config, db, logger = console) =
         }
     });
 
+    app.get('/contacts/:id', async function(req, res) {
+        try {
+            const contactId = req.params.id;
+            const contact = await client.getContactById(contactId);
+            res.json(contact);
+        } catch (err) {
+            logger.error(err);
+            res.status(400).json({ error: err.message });
+        }
+    });
+
     app.post('/send', async function(req, res) {
         try {
             outgoingMessageQueue.push(req.body)
