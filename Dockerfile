@@ -22,6 +22,6 @@ USER api
 RUN npm i
 
 # hotfixes
-COPY hotfixes/Client.js /home/api/src/node_modules/whatsapp-web.js/src/Client.js
+# COPY hotfixes/Client.js /home/api/src/node_modules/whatsapp-web.js/src/Client.js
 
 CMD ["node","index.js"]
