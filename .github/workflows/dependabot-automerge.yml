@@ -17,8 +17,6 @@ jobs:
       - name: Approve and merge
         id: auto-merge
         run: |
-          gh label create auto-merged --color 87139C
-          gh pr edit "$PR_URL" --add-label "auto-merged"
           gh pr review --approve "$PR_URL"
           gh pr merge --auto --squash "$PR_URL"
           echo "STATUS=true" >> $GITHUB_OUTPUT
