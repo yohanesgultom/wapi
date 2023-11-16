@@ -14,26 +14,8 @@ jobs:
 
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
     steps:
-      - name: Fetch update types
-        id: update-types
-        env:
-          UPDATE_TYPES: ${{ secrets.UPDATE_TYPES }}
-        run: |
-          arr=(${UPDATE_TYPES//;/ })
-          count=${#arr[@]}
-          echo "Types: ${arr[*]}"
-          echo "Count: ${count}"
-          echo "types=${arr[*]}" >> $GITHUB_OUTPUT
-          echo "count=${count}" >> $GITHUB_OUTPUT
-
-      - name: Fetch Dependabot metadata
-        if: ${{ fromJson(steps.update-types.outputs.count) > 0 }}
-        id: dependabot-metadata
-        uses: dependabot/fetch-metadata@v1.3.5
-
       - name: Approve and merge
         id: auto-merge
-        if: ${{ fromJson(steps.update-types.outputs.count) > 0 && contains(steps.update-types.outputs.types, steps.dependabot-metadata.outputs.update-type) }}
         run: |
           gh pr edit "$PR_URL" --add-label "auto-merged"
           gh pr review --approve "$PR_URL"
