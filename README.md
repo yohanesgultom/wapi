@@ -49,7 +49,7 @@ All APIs require [Basic Authentication](https://en.wikipedia.org/wiki/Basic_acce
 
 1. **POST** `/send`
 
-    Send a message to an individual or group chat (`number` can contain phone number with country code or a group id)
+    Send a message to an individual or group chat (`number` can contain phone number with country code or a group id). `attachments` is optional. But when provided, the `content` must be base64-encoded.
     Example:
 
         {
