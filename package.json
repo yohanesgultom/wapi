@@ -19,7 +19,7 @@
     "axios": "^1.6.8",
     "better-queue": "^3.8.12",
     "better-queue-sqlite": "^1.0.7",
-    "express": "^4.19.0",
+    "express": "^4.19.1",
     "express-basic-auth": "^1.2.1",
     "object-hash": "^3.0.0",
     "qr-image": "^3.2.0",
