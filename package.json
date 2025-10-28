@@ -16,7 +16,7 @@
   "author": "yohanes.gultom@gmail.com",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.13.0",
+    "axios": "^1.13.1",
     "better-queue": "^3.8.12",
     "better-queue-sqlite": "^1.0.7",
     "express": "^5.1.0",
