@@ -2,6 +2,8 @@ const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrTerminal = require('qrcode-terminal');
 const axios = require('axios');
 const { logger } = require('./logger');
+const path = require('node:path');
+const fs = require('fs');
 
 const IMAGE_MIMES = ['image/png', 'image/jpg', 'image/jpeg', 'image/bmp', 'image/webp'];
 const EMOJIS = ['👍', '✅', '💡', '🙂', '🐬', '🚀', '⭐', '🙏🏻'];
@@ -13,23 +15,27 @@ const createClient = (db, isDockerized = false) => {
 
     // use custom path to user data directory if provided
     logger.info(`USER_DATA_PATH = ${USER_DATA_PATH}`);
+    let lockFilePath;
     if (USER_DATA_PATH) {
         postOptions.authStrategy = new LocalAuth({
             dataPath: USER_DATA_PATH,
         });
-
-        // remove chromium profile lock if exists
-        const lockFilePath = path.join(USER_DATA_PATH, 'SingletonLock')
-        if (fs.existsSync(lockFilePath)) {
-            try {
-                fs.unlinkSync(lockFilePath);
-            } catch (err) {
-                console.log(`Failed to clear profile lock: ${err.message}`);
-            }
-        }
+        lockFilePath = path.join(USER_DATA_PATH, '.wwebjs_auth', 'session', 'SingletonLock')
     } else {
         postOptions.authStrategy = new LocalAuth();
+        lockFilePath = path.join(process.cwd(), '.wwebjs_auth', 'session', 'SingletonLock')
     }
+
+    // remove chromium profile lock if exists
+    logger.info(`lockFilePath = ${lockFilePath}`);
+    if (fs.existsSync(lockFilePath)) {
+        try {
+            fs.unlinkSync(lockFilePath);
+        } catch (err) {
+            console.log(`Failed to clear profile lock: ${err.message}`);
+        }
+    }
+
 
     // add postOptions when running inside docker
     logger.info(`dockerized = ${isDockerized}`);
