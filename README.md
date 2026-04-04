@@ -27,8 +27,11 @@ Without Docker:
 With Docker:
 
 ```
-docker run --name wapi-dev -e DOCKERIZED=1 -p 4000:4000 -d -v $PWD:/home/api wapi:latest
-docker exec -u 0 -it wapi-dev bash
+docker run -it --name wapi-dev -e DOCKERIZED=1 -p 4000:4000 -v $PWD:/usr/src/app node:24-alpine sh
+apk add --no-cache chromium
+export PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+npm i
+node index.js
 ```
 ## 🍱 API
 
