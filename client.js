@@ -28,12 +28,10 @@ const createClient = (db, isDockerized = false) => {
 
     // remove chromium profile lock if exists
     logger.info(`lockFilePath = ${lockFilePath}`);
-    if (fs.existsSync(lockFilePath)) {
-        try {
-            fs.unlinkSync(lockFilePath);
-        } catch (err) {
-            console.log(`Failed to clear profile lock: ${err.message}`);
-        }
+    try {
+        fs.unlinkSync(lockFilePath);
+    } catch (err) {
+        console.log(`Failed to clear profile lock: ${err.message}`);
     }
 
 
