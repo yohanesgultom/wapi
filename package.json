@@ -1,6 +1,6 @@
 {
   "name": "wapi",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "WhatsApp Rest API",
   "main": "index.js",
   "scripts": {

@@ -25,7 +25,7 @@ describe('client', () => {
 
     test('should handle ready event', async () => {
         clientMock.emit('ready');
-        expect(clientMock.getState).toBeCalled();
+        expect(clientMock.getState).toHaveBeenCalled();
     });
 
     test('should handle private message event', async () => {
@@ -42,8 +42,8 @@ describe('client', () => {
         const clientMock = createClient();
         clientMock.emit('message', msgMock);
         await new Promise(resolve => setTimeout(resolve, 100));
-        expect(msgMock.getChat).toBeCalled();
-        expect(msgMock.react).toBeCalled();
+        expect(msgMock.getChat).toHaveBeenCalled();
+        expect(msgMock.react).toHaveBeenCalled();
     });
 
     test('should handle group message event', async () => {
@@ -57,8 +57,8 @@ describe('client', () => {
         };
         const clientMock = createClient();
         clientMock.emit('message', msgMock);
-        expect(msgMock.getChat).toBeCalled();
-        expect(msgMock.react).not.toBeCalled();
+        expect(msgMock.getChat).toHaveBeenCalled();
+        expect(msgMock.react).not.toHaveBeenCalled();
     });
 
 });

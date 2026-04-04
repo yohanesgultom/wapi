@@ -8,25 +8,15 @@ Simple REST API wrapper for the super awesome [whatsapp-web.js](https://github.c
 
 ## ⚙️ Setup
 
-With Docker:
-
 1. Clone repo
 2. Copy `config.example.json` to `config.json` and set desired `user` & `password` (for Basic Authentication) and `port` (for API server)
 3. Build: `docker build -t wapi:latest .` 
 4. Run: `docker run --name wapi -e DOCKERIZED=1 -p 4000:4000 -d wapi:latest`
 
-Without Docker:
-
-1. Clone repo
-2. Copy `config.example.json` to `config.json` and set desired `user` & `password` (for Basic Authentication) and `port` (for API server)
-3. Run `npm install`
-4. Run `npm start`
-
 ## 🛠️ Development
 
-With Docker:
-
 ```
+cp config.example.json config.json
 docker run -it --name wapi-dev -e DOCKERIZED=1 -p 4000:4000 -v $PWD:/usr/src/app node:24-alpine sh
 apk add --no-cache chromium
 export PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser

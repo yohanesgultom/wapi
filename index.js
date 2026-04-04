@@ -66,6 +66,13 @@ const outgoingMessageQueue = new Queue(sendMessage, {
     },
 })
 
+// destroy client on exit
+process.on('exit', async (code) => {
+    if (client) {
+        await client.destroy();
+    }
+    console.log(`Process exited with code: ${code}`);
+})
 
 const app = createApp(client, outgoingMessageQueue, config, db, logger)
 app.listen(port, function (err) {

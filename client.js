@@ -17,6 +17,16 @@ const createClient = (db, isDockerized = false) => {
         postOptions.authStrategy = new LocalAuth({
             dataPath: USER_DATA_PATH,
         });
+
+        // remove chromium profile lock if exists
+        const lockFilePath = path.join(USER_DATA_PATH, 'SingletonLock')
+        if (fs.existsSync(lockFilePath)) {
+            try {
+                fs.unlinkSync(lockFilePath);
+            } catch (err) {
+                console.log(`Failed to clear profile lock: ${err.message}`);
+            }
+        }
     } else {
         postOptions.authStrategy = new LocalAuth();
     }
@@ -40,6 +50,11 @@ const createClient = (db, isDockerized = false) => {
     client.on('ready', async () => {
         const state = await client.getState();
         logger.info('Client is ' + state);
+    });
+
+    client.on('disconnected', async (reason) => {
+        console.log('Client was logged out', reason);
+        await client.destroy();
     });
 
     client.on('message', async (msg) => {
