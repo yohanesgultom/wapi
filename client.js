@@ -20,7 +20,7 @@ const createClient = (db, isDockerized = false) => {
         postOptions.authStrategy = new LocalAuth({
             dataPath: USER_DATA_PATH,
         });
-        lockFilePath = path.join(USER_DATA_PATH, '.wwebjs_auth', 'session', 'SingletonLock')
+        lockFilePath = path.join(USER_DATA_PATH, 'session', 'SingletonLock')
     } else {
         postOptions.authStrategy = new LocalAuth();
         lockFilePath = path.join(process.cwd(), '.wwebjs_auth', 'session', 'SingletonLock')
