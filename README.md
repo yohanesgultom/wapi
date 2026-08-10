@@ -1,5 +1,8 @@
 # 🥗 WAPI
 
+> [!WARNING]
+> This repo is archieved because Whatsapp keeps blocking my accounts. I gave up and switched to Whatsapp Business API instead 🙁
+
 ![Test](https://github.com/yohanesgultom/wapi/actions/workflows/main.yml/badge.svg?branch=main)
 
 Simple REST API wrapper for the super awesome [whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js)
